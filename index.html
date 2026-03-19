@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pre Análisis Crediticio — Funes Bergmann</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0f1f3d;
+    --navy-mid: #1a3260;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f8f5ef;
+    --cream-dark: #ede9e0;
+    --text: #1c1c1e;
+    --text-light: #5a5a6a;
+    --border: #d4cfc5;
+    --success: #2d7a5f;
+    --error: #c0392b;
+    --white: #ffffff;
+    --shadow: 0 4px 24px rgba(15,31,61,0.10);
+    --shadow-lg: 0 8px 48px rgba(15,31,61,0.16);
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .site-header {
+    background: var(--navy);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--gold);
+  }
+  .site-header .brand { display: flex; align-items: center; gap: 16px; }
+  .brand-logo {
+    width: 48px; height: 48px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--navy);
+  }
+  .brand-text h1 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; color: var(--white); letter-spacing: 0.02em; }
+  .brand-text p { font-size: 12px; color: rgba(255,255,255,0.55); font-weight: 300; margin-top: 1px; }
+  .header-badge { background: rgba(201,168,76,0.15); border: 1px solid var(--gold); color: var(--gold-light); padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .nav-tabs { background: var(--navy-mid); display: flex; gap: 2px; padding: 0 40px; overflow-x: auto; }
+  .nav-tab { padding: 12px 20px; color: rgba(255,255,255,0.55); font-size: 12px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em; }
+  .nav-tab:hover { color: rgba(255,255,255,0.85); }
+  .nav-tab.active { color: var(--gold-light); border-bottom-color: var(--gold); }
+
+  .content { display: none; }
+  .content.active { display: block; }
+
+  .form-wrapper { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .section-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 24px; overflow: hidden; border: 1px solid var(--border); }
+  .section-header { background: var(--navy); padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
+  .section-num { width: 26px; height: 26px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--navy); flex-shrink: 0; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; color: var(--white); letter-spacing: 0.02em; }
+  .section-body { padding: 24px; }
+
+  .field-grid { display: grid; gap: 16px; }
+  .field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .field-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .field-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group.full { grid-column: 1 / -1; }
+  .field-group.col2 { grid-column: span 2; }
+
+  label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="date"], select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(15,31,61,0.08); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .check-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: background 0.15s, border-color 0.15s; background: var(--cream); }
+  .check-item:hover { background: var(--cream-dark); border-color: var(--navy); }
+  .check-item input[type="checkbox"], .check-item input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); flex-shrink: 0; }
+  .check-item span { font-size: 13px; color: var(--text); }
+
+  .radio-inline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .radio-btn { padding: 7px 16px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 12px; background: var(--cream); transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .radio-btn:hover { border-color: var(--navy); background: var(--cream-dark); }
+  .radio-btn input { accent-color: var(--navy); }
+
+  .sub-section { border: 1px solid var(--cream-dark); border-radius: var(--radius); margin-top: 16px; overflow: hidden; }
+  .sub-section-header { background: var(--cream-dark); padding: 10px 16px; font-size: 12px; font-weight: 600; color: var(--navy-mid); text-transform: uppercase; letter-spacing: 0.06em; }
+  .sub-section-body { padding: 16px; }
+
+  .debt-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+  .debt-table th { background: var(--navy); color: var(--white); padding: 8px 10px; text-align: left; font-weight: 500; font-size: 11px; white-space: nowrap; }
+  .debt-table td { padding: 6px 4px; border-bottom: 1px solid var(--cream-dark); vertical-align: middle; }
+  .debt-table tr:last-child td { border-bottom: none; }
+  .debt-table input, .debt-table select { font-size: 12px; padding: 6px 8px; }
+
+  .input-prefix { display: flex; align-items: center; }
+  .prefix { background: var(--navy); color: var(--gold-light); padding: 9px 10px; border: 1px solid var(--navy); border-right: none; border-radius: var(--radius) 0 0 var(--radius); font-size: 13px; font-weight: 600; }
+  .input-prefix input { border-radius: 0 var(--radius) var(--radius) 0; }
+
+  .field-divider { border: none; border-top: 1px solid var(--cream-dark); margin: 16px 0; }
+  .helper { font-size: 11px; color: var(--text-light); margin-top: 3px; font-style: italic; }
+  .section-intro { font-size: 12px; color: var(--text-light); margin-bottom: 16px; font-style: italic; border-left: 3px solid var(--gold); padding-left: 10px; }
+
+  .conditional { display: none; }
+  .conditional.visible { display: block; }
+
+  .form-actions { display: flex; gap: 12px; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 2px solid var(--border); }
+  .btn { padding: 12px 28px; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; letter-spacing: 0.03em; }
+  .btn-primary { background: var(--navy); color: var(--white); }
+  .btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-secondary { background: var(--cream-dark); color: var(--navy); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-gold { background: var(--gold); color: var(--navy); }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-danger { background: var(--error); color: white; }
+
+  .toast { position: fixed; bottom: 30px; right: 30px; background: var(--navy); color: var(--white); padding: 14px 22px; border-radius: var(--radius); box-shadow: var(--shadow-lg); font-size: 13px; transform: translateY(80px); opacity: 0; transition: all 0.35s cubic-bezier(.4,0,.2,1); z-index: 999; border-left: 4px solid var(--gold); max-width: 340px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .records-wrapper { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+  .records-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .records-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--navy); }
+  .records-actions { display: flex; gap: 10px; }
+  .record-count { display: inline-block; background: var(--navy); color: var(--gold-light); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-left: 10px; }
+
+  .record-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .record-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--cream); border-bottom: 1px solid var(--border); cursor: pointer; }
+  .record-card-title { font-weight: 600; color: var(--navy); font-size: 14px; }
+  .record-card-meta { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .record-card-body { padding: 20px; display: none; }
+  .record-card-body.open { display: block; }
+  .record-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .record-detail { padding: 8px 12px; background: var(--cream); border-radius: 4px; border: 1px solid var(--cream-dark); }
+  .record-detail-key { font-size: 10px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; }
+  .record-detail-val { font-size: 13px; color: var(--text); margin-top: 2px; word-break: break-word; }
+
+  .empty-state { text-align: center; padding: 80px 20px; color: var(--text-light); }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-state h3 { font-family: 'Playfair Display', serif; color: var(--navy); margin-bottom: 8px; }
+
+  @media (max-width: 640px) {
+    .site-header { padding: 16px 20px; }
+    .header-badge { display: none; }
+    .form-wrapper, .records-wrapper { padding: 20px 12px 60px; }
+    .field-grid.cols-2, .field-grid.cols-3, .field-grid.cols-4 { grid-template-columns: 1fr; }
+    .nav-tabs { padding: 0 16px; }
+    .debt-table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <div class="brand-logo">FB</div>
+    <div class="brand-text">
+      <h1>Consultora Funes Bergmann</h1>
+      <p>Pre Análisis Crediticio · Formulario de Registro</p>
+    </div>
+  </div>
+  <div class="header-badge">Uso Interno</div>
+</header>
+
+<nav class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('form', this)">📋 Nuevo Registro</div>
+  <div class="nav-tab" onclick="switchTab('records', this)">🗂️ Registros Guardados</div>
+</nav>
+
+<!-- ════════ FORMULARIO ════════ -->
+<div id="tab-form" class="content active">
+<div class="form-wrapper">
+
+  <!-- 1. DATOS DE LA EMPRESA -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">1</div><div class="section-title">Datos de la Empresa</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-2">
+        <div class="field-group full"><label>Razón Social *</label><input type="text" id="razon_social" placeholder="Nombre completo o razón social"></div>
+        <div class="field-group"><label>CUIT</label><input type="text" id="cuit" placeholder="XX-XXXXXXXX-X"></div>
+        <div class="field-group"><label>Tipo de Empresa</label>
+          <select id="tipo_empresa"><option value="">Seleccionar...</option><option>Sociedad Anónima</option><option>Sociedad de Responsabilidad Limitada</option><option>Unipersonal</option></select>
+        </div>
+        <div class="field-group col2"><label>Actividad Principal</label><input type="text" id="actividad_principal" placeholder="Descripción de la actividad principal"></div>
+        <div class="field-group"><label>Código AFIP – Act. Principal</label><input type="text" id="cod_afip_principal" placeholder="Ej: 461190"></div>
+        <div class="field-group col2"><label>Actividad Secundaria</label><input type="text" id="actividad_secundaria" placeholder="Descripción de la actividad secundaria (opcional)"></div>
+        <div class="field-group"><label>Código AFIP – Act. Secundaria</label><input type="text" id="cod_afip_secundaria" placeholder="Ej: 461190"></div>
+        <div class="field-group"><label>Inicio de Actividades</label><input type="date" id="inicio_actividades"></div>
+        <div class="field-group"><label>Cantidad de Empleados</label><input type="number" id="empleados" placeholder="Nº de empleados" min="0"></div>
+        <div class="field-group"><label>% Capital Nacional</label><input type="number" id="p_nacional" placeholder="%" min="0" max="100"></div>
+        <div class="field-group"><label>% Capital Extranjero</label><input type="number" id="p_extranjero" placeholder="%" min="0" max="100"></div>
+      </div>
+      <hr class="field-divider">
+      <div class="field-grid cols-2">
+        <div class="field-group full"><label>Dirección</label><input type="text" id="direccion" placeholder="Calle y número"></div>
+        <div class="field-group"><label>Localidad</label><input type="text" id="localidad" placeholder="Ciudad / Localidad"></div>
+        <div class="field-group"><label>Provincia</label><input type="text" id="provincia" placeholder="Provincia"></div>
+        <div class="field-group"><label>Código Postal</label><input type="text" id="cod_postal" placeholder="XXXX"></div>
+        <div class="field-group"><label>Teléfonos</label><input type="tel" id="telefonos" placeholder="+54 341 XXXXXXX"></div>
+        <div class="field-group full"><label>Correo Electrónico</label><input type="email" id="email_empresa" placeholder="empresa@mail.com"></div>
+      </div>
+      <hr class="field-divider">
+      <div class="field-grid cols-3">
+        <div class="field-group"><label>Empresa Controlada / Grupo Económico</label>
+          <div class="radio-inline"><label class="radio-btn"><input type="radio" name="controlada" value="Si"> Si</label><label class="radio-btn"><input type="radio" name="controlada" value="No" checked> No</label></div>
+        </div>
+        <div class="field-group"><label>Empresa Concursada</label>
+          <div class="radio-inline"><label class="radio-btn"><input type="radio" name="concursada" value="Si"> Si</label><label class="radio-btn"><input type="radio" name="concursada" value="No" checked> No</label></div>
+        </div>
+        <div class="field-group"><label>Intermediación Financiera</label>
+          <div class="radio-inline"><label class="radio-btn"><input type="radio" name="interm_financiera" value="Si"> Si</label><label class="radio-btn"><input type="radio" name="interm_financiera" value="No" checked> No</label></div>
+        </div>
+        <div class="field-group"><label>Empresa de Seguros</label>
+          <div class="radio-inline"><label class="radio-btn"><input type="radio" name="seguros" value="Si"> Si</label><label class="radio-btn"><input type="radio" name="seguros" value="No" checked> No</label></div>
+        </div>
+        <div class="field-group"><label>Corretaje de Granos</label>
+          <div class="radio-inline"><label class="radio-btn"><input type="radio" name="corretaje" value="Si"> Si</label><label class="radio-btn"><input type="radio" name="corretaje" value="No" checked> No</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DATOS DE LOS SOCIOS -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">2</div><div class="section-title">Datos de los Socios</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-2">
+        <div class="field-group"><label>Nombre del Socio #1</label><input type="text" id="socio1_nombre" placeholder="Apellido y nombre"></div>
+        <div class="field-group"><label>CUIT Socio #1</label><input type="text" id="socio1_cuit" placeholder="XX-XXXXXXXX-X"></div>
+        <div class="field-group"><label>Nombre del Socio #2</label><input type="text" id="socio2_nombre" placeholder="Apellido y nombre"></div>
+        <div class="field-group"><label>CUIT Socio #2</label><input type="text" id="socio2_cuit" placeholder="XX-XXXXXXXX-X"></div>
+        <div class="field-group"><label>Nombre del Socio #3</label><input type="text" id="socio3_nombre" placeholder="Apellido y nombre"></div>
+        <div class="field-group"><label>CUIT Socio #3</label><input type="text" id="socio3_cuit" placeholder="XX-XXXXXXXX-X"></div>
+        <div class="field-group"><label>Nombre del Socio #4</label><input type="text" id="socio4_nombre" placeholder="Apellido y nombre"></div>
+        <div class="field-group"><label>CUIT Socio #4</label><input type="text" id="socio4_cuit" placeholder="XX-XXXXXXXX-X"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. DESCRIPCIÓN ACTIVIDAD -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">3</div><div class="section-title">Descripción de la Actividad</div></div>
+    <div class="section-body">
+      <div class="field-group"><label>Descripción Actividad Empresa</label>
+        <textarea id="descripcion_actividad" rows="4" placeholder="Describa brevemente a qué se dedica la empresa, sus principales productos/servicios, mercados y clientes…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. VENTAS Y RESULTADOS -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">4</div><div class="section-title">Ventas y Resultados — Últimos 3 Ejercicios</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-4" style="margin-bottom:12px;align-items:end;">
+        <div></div>
+        <div style="font-weight:600;font-size:12px;text-align:center;color:var(--navy)">Ejercicio 1</div>
+        <div style="font-weight:600;font-size:12px;text-align:center;color:var(--navy)">Ejercicio 2</div>
+        <div style="font-weight:600;font-size:12px;text-align:center;color:var(--navy)">Ejercicio 3</div>
+        <label style="align-self:center">Año / Período</label>
+        <input type="text" id="ventas1_anio" placeholder="Ej: 2022">
+        <input type="text" id="ventas2_anio" placeholder="Ej: 2023">
+        <input type="text" id="ventas3_anio" placeholder="Ej: 2024">
+        <label style="align-self:center">Ventas Anuales ($)</label>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ventas1_monto" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ventas2_monto" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ventas3_monto" placeholder="0"></div>
+        <label style="align-self:center">Resultado ($)</label>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ventas1_resultado" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ventas2_resultado" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ventas3_resultado" placeholder="0"></div>
+      </div>
+      <div class="field-grid cols-2">
+        <div class="field-group"><label>Cierre de Último Balance</label><input type="date" id="cierre_balance"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ACTIVO PASIVO PN -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">5</div><div class="section-title">Activo, Pasivo y Patrimonio Neto — Últimos 3 Años</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-4" style="margin-bottom:12px;align-items:end;">
+        <div></div>
+        <div style="font-weight:600;font-size:12px;text-align:center;color:var(--navy)">Año 1</div>
+        <div style="font-weight:600;font-size:12px;text-align:center;color:var(--navy)">Año 2</div>
+        <div style="font-weight:600;font-size:12px;text-align:center;color:var(--navy)">Año 3</div>
+        <label style="align-self:center">Año</label>
+        <input type="text" id="ap1_anio" placeholder="Ej: 2022">
+        <input type="text" id="ap2_anio" placeholder="Ej: 2023">
+        <input type="text" id="ap3_anio" placeholder="Ej: 2024">
+        <label style="align-self:center">Activos ($)</label>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap1_activo" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap2_activo" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap3_activo" placeholder="0"></div>
+        <label style="align-self:center">Pasivo ($)</label>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap1_pasivo" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap2_pasivo" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap3_pasivo" placeholder="0"></div>
+        <label style="align-self:center">PN ($)</label>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap1_pn" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap2_pn" placeholder="0"></div>
+        <div class="input-prefix"><span class="prefix">$</span><input type="number" id="ap3_pn" placeholder="0"></div>
+      </div>
+      <div class="field-grid cols-2">
+        <div class="field-group"><label>Capital Social Suscripto e Integrado ($)</label>
+          <div class="input-prefix"><span class="prefix">$</span><input type="number" id="capital_social" placeholder="0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. FINANCIAMIENTO CAPITAL DE TRABAJO -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">6</div><div class="section-title">Financiamiento del Capital de Trabajo</div></div>
+    <div class="section-body">
+      <p class="section-intro">¿Cómo financia la empresa su capital de trabajo o erogaciones corrientes? Puede marcar más de una opción.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="ct_giro"><span>Giro operativo de la empresa (ventas)</span></label>
+        <label class="check-item"><input type="checkbox" id="ct_proveedores"><span>Financiación de proveedores</span></label>
+        <label class="check-item"><input type="checkbox" id="ct_cpd" onchange="toggleVis('ct_cpd','ct_cpd_wrap')"><span>Descuento de valores (CPD)</span></label>
+        <div id="ct_cpd_wrap" style="display:none;padding:8px 16px 4px;">
+          <label>Promedio de venta anual de CPD ($)</label>
+          <div class="input-prefix" style="max-width:280px;"><span class="prefix">$</span><input type="number" id="ct_cpd_monto" placeholder="0"></div>
+        </div>
+        <label class="check-item"><input type="checkbox" id="ct_cta_corriente"><span>Descuento en cuenta corriente</span></label>
+        <label class="check-item"><input type="checkbox" id="ct_factoring"><span>Factoring</span></label>
+        <label class="check-item"><input type="checkbox" id="ct_otros" onchange="toggleVis('ct_otros','ct_otros_wrap')"><span>Otros</span></label>
+        <div id="ct_otros_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="ct_otros_txt" placeholder="Especifique…"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. COBROS Y PAGOS -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">7</div><div class="section-title">Plazos de Cobros y Pagos</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-2">
+        <div class="field-group"><label>Plazo Promedio de Cobros de Ventas (días)</label>
+          <div class="radio-inline">
+            <label class="radio-btn"><input type="radio" name="plazo_cobros" value="30"> 30</label>
+            <label class="radio-btn"><input type="radio" name="plazo_cobros" value="60"> 60</label>
+            <label class="radio-btn"><input type="radio" name="plazo_cobros" value="90"> 90</label>
+            <label class="radio-btn"><input type="radio" name="plazo_cobros" value="120"> 120</label>
+            <label class="radio-btn"><input type="radio" name="plazo_cobros" value="180"> 180</label>
+          </div>
+        </div>
+        <div class="field-group"><label>Plazo Promedio de Pagos de Compras (días)</label>
+          <div class="radio-inline">
+            <label class="radio-btn"><input type="radio" name="plazo_pagos" value="30"> 30</label>
+            <label class="radio-btn"><input type="radio" name="plazo_pagos" value="60"> 60</label>
+            <label class="radio-btn"><input type="radio" name="plazo_pagos" value="90"> 90</label>
+            <label class="radio-btn"><input type="radio" name="plazo_pagos" value="120"> 120</label>
+            <label class="radio-btn"><input type="radio" name="plazo_pagos" value="180"> 180</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. FINANCIAMIENTO INVERSIONES -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">8</div><div class="section-title">Financiamiento de Inversiones</div></div>
+    <div class="section-body">
+      <p class="section-intro">¿Cómo financió en los últimos años las inversiones o proyectos de inversión? Puede marcar más de una opción.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="inv_giro"><span>Giro operativo de la empresa (ingresos corrientes / ventas)</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_ahorros"><span>Ahorros / reservas / resultados no asignados de la empresa</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_aportes"><span>Aportes particulares de los socios</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_bancario"><span>Préstamos bancarios amortizables</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_proveedores"><span>Financiación directa de proveedores</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_leasing"><span>Leasing</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_on"><span>Obligaciones Negociables / Pagaré Bursátil / Fideicomiso Financiero</span></label>
+        <label class="check-item"><input type="checkbox" id="inv_otros" onchange="toggleVis('inv_otros','inv_otros_wrap')"><span>Otros</span></label>
+        <div id="inv_otros_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="inv_otros_txt" placeholder="Especifique…"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. EXPERIENCIA BANCARIA -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">9</div><div class="section-title">Mejor Experiencia Bancaria y Tipo de Garantía</div></div>
+    <div class="section-body">
+      <p class="section-intro">Indique el banco con el que mejor experiencia tuvo (ordene del 1 al 3).</p>
+      <div class="field-grid cols-3">
+        <div class="field-group"><label>1° Mejor Banco</label><input type="text" id="banco_exp1" placeholder="Nombre del banco"></div>
+        <div class="field-group"><label>2° Mejor Banco</label><input type="text" id="banco_exp2" placeholder="Nombre del banco"></div>
+        <div class="field-group"><label>3° Mejor Banco</label><input type="text" id="banco_exp3" placeholder="Nombre del banco"></div>
+      </div>
+      <div class="sub-section">
+        <div class="sub-section-header">4.1 — Tipo de Garantía Requerida por la Entidad Bancaria</div>
+        <div class="sub-section-body">
+          <div class="check-group">
+            <label class="check-item"><input type="checkbox" id="gar_hipot"><span>Real – Hipotecaria</span></label>
+            <label class="check-item"><input type="checkbox" id="gar_prend"><span>Real – Prendaria</span></label>
+            <label class="check-item"><input type="checkbox" id="gar_fianza"><span>Fianza / Aval de los socios</span></label>
+            <label class="check-item"><input type="checkbox" id="gar_otra" onchange="toggleVis('gar_otra','gar_otra_wrap')"><span>Otra</span></label>
+            <div id="gar_otra_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="gar_otra_txt" placeholder="Especifique…"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. SGR -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">10</div><div class="section-title">Sociedad de Garantía Recíproca (SGR)</div></div>
+    <div class="section-body">
+      <div class="field-group">
+        <label>¿Operó con alguna SGR?</label>
+        <div class="radio-inline">
+          <label class="radio-btn"><input type="radio" name="sgr_opero" value="Si" onchange="showEl('sgr_detail')"> Si</label>
+          <label class="radio-btn"><input type="radio" name="sgr_opero" value="No" checked onchange="hideEl('sgr_detail')"> No</label>
+        </div>
+      </div>
+      <div id="sgr_detail" class="conditional" style="margin-top:16px;">
+        <div class="field-group" style="margin-bottom:16px;"><label>Indique cuál/es SGR</label><input type="text" id="sgr_cual" placeholder="Nombre de la/s SGR"></div>
+        <div class="sub-section">
+          <div class="sub-section-header">5.1 — Experiencia con la SGR</div>
+          <div class="sub-section-body">
+            <div class="radio-inline">
+              <label class="radio-btn"><input type="radio" name="sgr_exp" value="Muy buena"> Muy buena</label>
+              <label class="radio-btn"><input type="radio" name="sgr_exp" value="Buena"> Buena</label>
+              <label class="radio-btn"><input type="radio" name="sgr_exp" value="Regular"> Regular</label>
+              <label class="radio-btn"><input type="radio" name="sgr_exp" value="Mala"> Mala</label>
+            </div>
+          </div>
+        </div>
+        <div class="sub-section" style="margin-top:12px;">
+          <div class="sub-section-header">5.2 — Contragarantía Requerida por la SGR</div>
+          <div class="sub-section-body">
+            <div class="check-group">
+              <label class="check-item"><input type="checkbox" id="sgr_cg_hipot"><span>Real – Hipotecaria</span></label>
+              <label class="check-item"><input type="checkbox" id="sgr_cg_prend"><span>Real – Prendaria</span></label>
+              <label class="check-item"><input type="checkbox" id="sgr_cg_fianza"><span>Fianza / Aval de los socios</span></label>
+              <label class="check-item"><input type="checkbox" id="sgr_cg_otra" onchange="toggleVis('sgr_cg_otra','sgr_cg_otra_wrap')"><span>Otra</span></label>
+              <div id="sgr_cg_otra_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="sgr_cg_otra_txt" placeholder="Especifique…"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sub-section" style="margin-top:12px;">
+          <div class="sub-section-header">5.3 — Producto Contratado con la SGR</div>
+          <div class="sub-section-body">
+            <div class="check-group">
+              <label class="check-item"><input type="checkbox" id="sgr_prod_fin"><span>Garantía Financiera para préstamo amortizable</span></label>
+              <label class="check-item"><input type="checkbox" id="sgr_prod_cpd"><span>Línea de Cheque de Pago Diferido (CPD)</span></label>
+              <label class="check-item"><input type="checkbox" id="sgr_prod_on"><span>Obligación Negociable / Pagaré Bursátil</span></label>
+              <label class="check-item"><input type="checkbox" id="sgr_prod_otro" onchange="toggleVis('sgr_prod_otro','sgr_prod_otro_wrap')"><span>Otro</span></label>
+              <div id="sgr_prod_otro_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="sgr_prod_otro_txt" placeholder="Especifique…"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. RAZONES NO ENDEUDAMIENTO -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">11</div><div class="section-title">Razones de No Endeudamiento Bancario</div></div>
+    <div class="section-body">
+      <p class="section-intro">En caso de NO haber tomado endeudamiento bancario de largo plazo, indique cuál/es fueron las razones. Puede marcar más de una opción.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="ne_buro"><span>Excesivos trámites administrativos / burocráticos</span></label>
+        <label class="check-item"><input type="checkbox" id="ne_tasas"><span>Tasas de interés no convenientes</span></label>
+        <label class="check-item"><input type="checkbox" id="ne_plazos"><span>Plazos de devolución no convenientes</span></label>
+        <label class="check-item"><input type="checkbox" id="ne_gracia"><span>Inexistencia de períodos de gracia</span></label>
+        <label class="check-item"><input type="checkbox" id="ne_garantias"><span>No poseer las garantías requeridas</span></label>
+        <label class="check-item"><input type="checkbox" id="ne_politica"><span>Política de la empresa de "no endeudamiento"</span></label>
+        <label class="check-item"><input type="checkbox" id="ne_otros" onchange="toggleVis('ne_otros','ne_otros_wrap')"><span>Otros</span></label>
+        <div id="ne_otros_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="ne_otros_txt" placeholder="Especifique…"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12. CONDICIONES LÍNEA DE CRÉDITO -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">12</div><div class="section-title">Condiciones Ideales de una Línea de Crédito</div></div>
+    <div class="section-body">
+      <p class="section-intro">¿Qué condiciones o características debiera tener una línea de crédito para adaptarse a las necesidades de su empresa? Puede marcar más de una opción.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="lc_plazo"><span>Mayor plazo de devolución</span></label>
+        <label class="check-item"><input type="checkbox" id="lc_tasas"><span>Menores tasas de interés</span></label>
+        <label class="check-item"><input type="checkbox" id="lc_gracia"><span>Existencia de períodos de gracia</span></label>
+        <label class="check-item"><input type="checkbox" id="lc_costos"><span>Menores gastos o costos financieros / administrativos asociados</span></label>
+        <label class="check-item"><input type="checkbox" id="lc_otros" onchange="toggleVis('lc_otros','lc_otros_wrap')"><span>Otros</span></label>
+        <div id="lc_otros_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="lc_otros_txt" placeholder="Especifique…"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. PROYECTO DE INVERSIÓN -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">13</div><div class="section-title">Proyecto de Inversión</div></div>
+    <div class="section-body">
+      <p class="section-intro">¿De qué se trata el proyecto de inversión? Puede marcar más de una opción.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="pi_bienes"><span>Compra de bienes de capital: rodados, maquinarias y equipos, etc.</span></label>
+        <label class="check-item"><input type="checkbox" id="pi_ampliacion"><span>Ampliación y/o construcción de instalaciones en planta productiva</span></label>
+        <label class="check-item"><input type="checkbox" id="pi_innovacion"><span>Innovación y desarrollo de nuevos productos y/o procesos productivos</span></label>
+        <label class="check-item"><input type="checkbox" id="pi_capital"><span>Incremento de capital de trabajo: compra de insumos, materias primas, pago de salarios, etc.</span></label>
+        <label class="check-item"><input type="checkbox" id="pi_otros" onchange="toggleVis('pi_otros','pi_otros_wrap')"><span>Otros</span></label>
+        <div id="pi_otros_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="pi_otros_txt" placeholder="Especifique…"></div>
+      </div>
+      <div class="field-grid cols-3" style="margin-top:20px;">
+        <div class="field-group"><label>Monto Estimado del Proyecto ($)</label>
+          <div class="input-prefix"><span class="prefix">$</span><input type="number" id="pi_monto" placeholder="0"></div>
+        </div>
+        <div class="field-group"><label>Monto Estimado a Solicitar ($)</label>
+          <div class="input-prefix"><span class="prefix">$</span><input type="number" id="pi_monto_solicitar" placeholder="0"></div>
+        </div>
+        <div class="field-group"><label>Destino de los Fondos</label>
+          <select id="pi_destino">
+            <option value="">Seleccionar...</option>
+            <option>Capital de Trabajo</option>
+            <option>Ampliaciones</option>
+            <option>Construcción</option>
+            <option>Inversiones en general</option>
+            <option>Compra de bienes de capital</option>
+          </select>
+        </div>
+      </div>
+      <div class="sub-section" style="margin-top:16px;">
+        <div class="sub-section-header">¿Es parte de un Proyecto Mayor?</div>
+        <div class="sub-section-body">
+          <div class="radio-inline" style="margin-bottom:10px;">
+            <label class="radio-btn"><input type="radio" name="proy_mayor" value="Si" onchange="showEl('pm_wrap')"> Si</label>
+            <label class="radio-btn"><input type="radio" name="proy_mayor" value="No" checked onchange="hideEl('pm_wrap')"> No</label>
+          </div>
+          <div id="pm_wrap" class="conditional">
+            <div class="field-group"><label>Monto Total del Proyecto Mayor ($)</label>
+              <div class="input-prefix" style="max-width:300px;"><span class="prefix">$</span><input type="number" id="pm_monto" placeholder="0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14. RAZONES DEL PROYECTO -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">14</div><div class="section-title">Justificación del Proyecto de Inversión</div></div>
+    <div class="section-body">
+      <p class="section-intro">Razones que justifican el proyecto. Puede marcar más de una opción.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="rp_demanda"><span>Incremento de demanda de clientes que no puede ser atendida en la actualidad</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_crecimiento"><span>Búsqueda de crecimiento por decisión empresaria</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_renovacion"><span>Renovación / modernización / reemplazo de maquinaria y equipos existentes</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_capacidad"><span>Ampliación de capacidad instalada para producción de bienes y servicios</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_mercados"><span>Acceso a nuevos mercados y/o clientes</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_costos"><span>Reducción de costos</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_comp_precio"><span>Presión de la competencia por precio</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_comp_prod"><span>Presión de la competencia por atributos de nuevos productos y servicios</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_normas"><span>Normas que obligan a cambiar productos y/o procesos productivos</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_espacio"><span>Restricción del espacio en el área de producción / generación de valor</span></label>
+        <label class="check-item"><input type="checkbox" id="rp_otros" onchange="toggleVis('rp_otros','rp_otros_wrap')"><span>Otros</span></label>
+        <div id="rp_otros_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="rp_otros_txt" placeholder="Especifique…"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 15. PLAZO DEL PROYECTO -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">15</div><div class="section-title">Plazo del Proyecto Hasta su Puesta en Marcha</div></div>
+    <div class="section-body">
+      <div class="radio-inline">
+        <label class="radio-btn"><input type="radio" name="plazo_proy" value="1 a 3 meses"> 1 a 3 meses</label>
+        <label class="radio-btn"><input type="radio" name="plazo_proy" value="3 a 6 meses"> 3 a 6 meses</label>
+        <label class="radio-btn"><input type="radio" name="plazo_proy" value="6 a 9 meses"> 6 a 9 meses</label>
+        <label class="radio-btn"><input type="radio" name="plazo_proy" value="9 a 12 meses"> 9 a 12 meses</label>
+        <label class="radio-btn"><input type="radio" name="plazo_proy" value="Más de 12 meses"> Más de 12 meses</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. GARANTÍAS -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">16</div><div class="section-title">Garantías de la Empresa y/o los Socios</div></div>
+    <div class="section-body">
+      <div class="field-group">
+        <label>¿Posee garantías acordes al monto del crédito a gestionar?</label>
+        <div class="radio-inline">
+          <label class="radio-btn"><input type="radio" name="posee_gar" value="Si" onchange="showEl('gar_detail')"> Si</label>
+          <label class="radio-btn"><input type="radio" name="posee_gar" value="No" checked onchange="hideEl('gar_detail')"> No</label>
+        </div>
+      </div>
+      <div id="gar_detail" class="conditional" style="margin-top:16px;">
+        <div class="sub-section">
+          <div class="sub-section-header">11.1 — Valor de Mercado de Inmuebles como Garantía</div>
+          <div class="sub-section-body">
+            <div class="input-prefix" style="max-width:300px;"><span class="prefix">$</span><input type="number" id="gar_valor" placeholder="0"></div>
+          </div>
+        </div>
+        <div class="sub-section" style="margin-top:12px;">
+          <div class="sub-section-header">11.2 — Tipo de Inmueble</div>
+          <div class="sub-section-body">
+            <div class="check-group">
+              <label class="check-item"><input type="checkbox" id="inm_planta"><span>Planta industrial</span></label>
+              <label class="check-item"><input type="checkbox" id="inm_local"><span>Local Comercial</span></label>
+              <label class="check-item"><input type="checkbox" id="inm_casa"><span>Casa / Departamento de uso residencial</span></label>
+              <label class="check-item"><input type="checkbox" id="inm_terreno"><span>Terreno/s</span></label>
+              <label class="check-item"><input type="checkbox" id="inm_otro" onchange="toggleVis('inm_otro','inm_otro_wrap')"><span>Otros</span></label>
+              <div id="inm_otro_wrap" style="display:none;padding:8px 16px 4px;"><input type="text" id="inm_otro_txt" placeholder="Especifique…"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="field-group" style="margin-top:20px;"><label>Inscripción RIN</label><input type="text" id="inscripcion_rin" placeholder="Nº de inscripción RIN (si corresponde)"></div>
+    </div>
+  </div>
+
+  <!-- 17. DEUDA BANCARIA -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">17</div><div class="section-title">Situación de Endeudamiento Bancario</div></div>
+    <div class="section-body">
+      <div class="field-group">
+        <label>¿Posee deuda bancaria?</label>
+        <div class="radio-inline">
+          <label class="radio-btn"><input type="radio" name="posee_deuda" value="Si" onchange="showEl('deuda_detail')"> Si</label>
+          <label class="radio-btn"><input type="radio" name="posee_deuda" value="No" checked onchange="hideEl('deuda_detail')"> No</label>
+        </div>
+      </div>
+      <div id="deuda_detail" class="conditional" style="margin-top:16px;">
+        <p class="section-intro">Complete el cuadro con la información de cada crédito vigente.</p>
+        <div style="overflow-x:auto;">
+          <table class="debt-table">
+            <thead>
+              <tr>
+                <th>Banco</th><th>Monto Original ($)</th><th>Fecha Inicio</th><th>Fecha Cancelación</th>
+                <th>Amortización</th><th>Cuotas Pactadas</th><th>Cuotas Pendientes</th>
+                <th>Valor Cuota ($)</th><th>Tipo de Crédito</th><th>Garantía</th>
+              </tr>
+            </thead>
+            <tbody id="debt-rows">
+              <tr>
+                <td><input type="text" name="d_banco" placeholder="Banco"></td>
+                <td><input type="number" name="d_monto" placeholder="0"></td>
+                <td><input type="date" name="d_inicio"></td>
+                <td><input type="date" name="d_cancel"></td>
+                <td><select name="d_amort"><option value="">—</option><option>mensual</option><option>bimestral</option><option>trimestral</option><option>cuatrimestral</option></select></td>
+                <td><input type="number" name="d_cpact" placeholder="0"></td>
+                <td><input type="number" name="d_cpend" placeholder="0"></td>
+                <td><input type="number" name="d_vcuota" placeholder="0"></td>
+                <td><select name="d_tipo"><option value="">—</option><option>Inversión</option><option>Capital de Trabajo</option><option>Prendario</option><option>Leasing</option></select></td>
+                <td><select name="d_gar"><option value="">—</option><option>Sola Firma</option><option>Prenda</option><option>Hipoteca</option><option>SGR</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" type="button" onclick="addDebtRow()">+ Agregar fila</button>
+          <button class="btn btn-danger btn-sm" type="button" onclick="removeDebtRow()">− Eliminar última</button>
+        </div>
+      </div>
+      <hr class="field-divider">
+      <div class="field-grid cols-3">
+        <div class="field-group"><label>Total de Deudas ($)</label><div class="input-prefix"><span class="prefix">$</span><input type="number" id="total_deudas" placeholder="0"></div></div>
+        <div class="field-group"><label>Deudas Previsionales ($)</label><div class="input-prefix"><span class="prefix">$</span><input type="number" id="deudas_previs" placeholder="0"></div></div>
+        <div class="field-group"><label>Deudas Fiscales ($)</label><div class="input-prefix"><span class="prefix">$</span><input type="number" id="deudas_fiscales" placeholder="0"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18. ANTECEDENTES PROGRAMAS -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">18</div><div class="section-title">Antecedentes en Programas Financieros</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-2">
+        <div class="field-group">
+          <label>¿Participó de Programas de Garantía Recíproca?</label>
+          <div class="radio-inline">
+            <label class="radio-btn"><input type="radio" name="pgr" value="Si" onchange="showEl('pgr_cual_wrap')"> Si</label>
+            <label class="radio-btn"><input type="radio" name="pgr" value="No" checked onchange="hideEl('pgr_cual_wrap')"> No</label>
+          </div>
+          <div id="pgr_cual_wrap" class="conditional" style="margin-top:8px;"><input type="text" id="pgr_cual" placeholder="Indique cuál/es…"></div>
+        </div>
+        <div class="field-group">
+          <label>¿Participó de Créditos a Tasa Bonificada?</label>
+          <div class="radio-inline">
+            <label class="radio-btn"><input type="radio" name="ctb" value="Si" onchange="showEl('ctb_cual_wrap')"> Si</label>
+            <label class="radio-btn"><input type="radio" name="ctb" value="No" checked onchange="hideEl('ctb_cual_wrap')"> No</label>
+          </div>
+          <div id="ctb_cual_wrap" class="conditional" style="margin-top:8px;"><input type="text" id="ctb_cual" placeholder="Indique cuál/es…"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 19. DOCUMENTACIÓN -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">19</div><div class="section-title">Documentación a Adjuntar para el Pre Análisis</div></div>
+    <div class="section-body">
+      <p class="section-intro">Marque la documentación que se adjunta con el presente formulario.</p>
+      <div class="check-group">
+        <label class="check-item"><input type="checkbox" id="doc1"><span><strong>1.</strong> Últimos 2 estados contables o últimas 2 DDJJ de Imp. Ganancias (empresas unipersonales)</span></label>
+        <label class="check-item"><input type="checkbox" id="doc2"><span><strong>2.</strong> Ventas mensuales del último balance/ejercicio y ventas mensuales pos-balance/ejercicio</span></label>
+        <label class="check-item"><input type="checkbox" id="doc3"><span><strong>3.</strong> Datos de los socios: nombre y apellido, CUIT, % de participación en la sociedad</span></label>
+        <label class="check-item"><input type="checkbox" id="doc4"><span><strong>4.</strong> Certificado PyME vigente y último F 931</span></label>
+      </div>
+      <div class="field-group" style="margin-top:12px;"><label>Observaciones / Documentación Adicional</label>
+        <textarea id="doc_obs" rows="3" placeholder="Detallar cualquier documentación adicional o aclaración…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 20. RESPONSABLE -->
+  <div class="section-card">
+    <div class="section-header"><div class="section-num">20</div><div class="section-title">Persona que Completó el Formulario</div></div>
+    <div class="section-body">
+      <div class="field-grid cols-2">
+        <div class="field-group"><label>Nombre y Apellido *</label><input type="text" id="resp_nombre" placeholder="Nombre completo"></div>
+        <div class="field-group"><label>Cargo</label><input type="text" id="resp_cargo" placeholder="Cargo en la empresa"></div>
+        <div class="field-group"><label>Correo Electrónico</label><input type="email" id="resp_email" placeholder="correo@empresa.com"></div>
+        <div class="field-group"><label>Teléfono</label><input type="tel" id="resp_tel" placeholder="+54 341 XXXXXXX"></div>
+        <div class="field-group full"><label>Observaciones Generales</label>
+          <textarea id="obs_generales" rows="3" placeholder="Cualquier información adicional relevante para el análisis…"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="form-actions">
+    <button class="btn btn-primary" id="btn-save" onclick="saveRecord()">💾 Guardar Registro</button>
+    <button class="btn btn-secondary" onclick="clearForm()">🗑️ Limpiar Formulario</button>
+    <span id="form-status" style="font-size:12px;color:var(--text-light);"></span>
+  </div>
+</div>
+</div>
+
+<!-- ════════ REGISTROS ════════ -->
+<div id="tab-records" class="content">
+<div class="records-wrapper">
+  <div class="records-header">
+    <div>
+      <h2 class="records-title">Registros Guardados <span class="record-count" id="rec-count">0</span></h2>
+      <p style="font-size:12px;color:var(--text-light);margin-top:4px;">Almacenados localmente en este navegador.</p>
+    </div>
+    <div class="records-actions">
+      <button class="btn btn-gold btn-sm" onclick="exportJSON()">⬇ JSON</button>
+      <button class="btn btn-gold btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Borrar Todo</button>
+    </div>
+  </div>
+  <div id="records-list"></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<iframe name="sheets-target" style="display:none;" aria-hidden="true"></iframe>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIGURACIÓN — pegá tu URL de Apps Script aquí abajo
+// ══════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7RnbLSZr4mLAiXrRTdevCL1coJ42av-4dnk_Y-PI7SbiPxgTKLXB_2BKgMwBm6fA52w/exec';
+// ══════════════════════════════════════════════════════════
+
+// ── Utility ──────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const val = id => ($( id) ? $(id).value : '');
+const chk = id => $(id) ? $(id).checked : false;
+const radioVal = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; };
+
+function toggleVis(chkId, wrapId) {
+  const c = $(chkId); const w = $(wrapId);
+  if (c && w) w.style.display = c.checked ? 'block' : 'none';
+}
+function showEl(id) { const el = $(id); if(el) el.classList.add('visible'); }
+function hideEl(id) { const el = $(id); if(el) el.classList.remove('visible'); }
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  $('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+  if (tab === 'records') renderRecords();
+}
+
+function showToast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Debt table ────────────────────────────────────────────
+const debtRowHTML = () => `<tr>
+  <td><input type="text" name="d_banco" placeholder="Banco"></td>
+  <td><input type="number" name="d_monto" placeholder="0"></td>
+  <td><input type="date" name="d_inicio"></td>
+  <td><input type="date" name="d_cancel"></td>
+  <td><select name="d_amort"><option value="">—</option><option>mensual</option><option>bimestral</option><option>trimestral</option><option>cuatrimestral</option></select></td>
+  <td><input type="number" name="d_cpact" placeholder="0"></td>
+  <td><input type="number" name="d_cpend" placeholder="0"></td>
+  <td><input type="number" name="d_vcuota" placeholder="0"></td>
+  <td><select name="d_tipo"><option value="">—</option><option>Inversión</option><option>Capital de Trabajo</option><option>Prendario</option><option>Leasing</option></select></td>
+  <td><select name="d_gar"><option value="">—</option><option>Sola Firma</option><option>Prenda</option><option>Hipoteca</option><option>SGR</option></select></td>
+</tr>`;
+function addDebtRow() { $('debt-rows').insertAdjacentHTML('beforeend', debtRowHTML()); }
+function removeDebtRow() { const rows = document.querySelectorAll('#debt-rows tr'); if (rows.length > 1) rows[rows.length-1].remove(); }
+
+function collectDebt() {
+  return Array.from(document.querySelectorAll('#debt-rows tr')).map(row => {
+    const obj = {};
+    row.querySelectorAll('[name]').forEach(el => { obj[el.name] = el.value; });
+    return obj;
+  }).filter(r => r.d_banco);
+}
+
+function collectChecks(ids, labels) {
+  return ids.map((id, i) => chk(id) ? labels[i] : '').filter(Boolean).join(', ');
+}
+
+// ── Save record ───────────────────────────────────────────
+function saveRecord() {
+  const razon = val('razon_social').trim();
+  if (!razon) { showToast('⚠ Complete el campo Razón Social para guardar.'); return; }
+
+  const r = {
+    id: Date.now(),
+    fecha_registro: new Date().toLocaleString('es-AR'),
+    // 1
+    razon_social: razon, cuit: val('cuit'), tipo_empresa: val('tipo_empresa'),
+    actividad_principal: val('actividad_principal'), cod_afip_principal: val('cod_afip_principal'),
+    actividad_secundaria: val('actividad_secundaria'), cod_afip_secundaria: val('cod_afip_secundaria'),
+    inicio_actividades: val('inicio_actividades'), empleados: val('empleados'),
+    p_nacional: val('p_nacional'), p_extranjero: val('p_extranjero'),
+    direccion: val('direccion'), localidad: val('localidad'), provincia: val('provincia'),
+    cod_postal: val('cod_postal'), telefonos: val('telefonos'), email_empresa: val('email_empresa'),
+    controlada: radioVal('controlada'), concursada: radioVal('concursada'),
+    interm_financiera: radioVal('interm_financiera'), seguros: radioVal('seguros'), corretaje: radioVal('corretaje'),
+    // 2
+    socio1_nombre: val('socio1_nombre'), socio1_cuit: val('socio1_cuit'),
+    socio2_nombre: val('socio2_nombre'), socio2_cuit: val('socio2_cuit'),
+    socio3_nombre: val('socio3_nombre'), socio3_cuit: val('socio3_cuit'),
+    socio4_nombre: val('socio4_nombre'), socio4_cuit: val('socio4_cuit'),
+    // 3
+    descripcion_actividad: val('descripcion_actividad'),
+    // 4
+    ventas1_anio: val('ventas1_anio'), ventas1_monto: val('ventas1_monto'), ventas1_resultado: val('ventas1_resultado'),
+    ventas2_anio: val('ventas2_anio'), ventas2_monto: val('ventas2_monto'), ventas2_resultado: val('ventas2_resultado'),
+    ventas3_anio: val('ventas3_anio'), ventas3_monto: val('ventas3_monto'), ventas3_resultado: val('ventas3_resultado'),
+    cierre_balance: val('cierre_balance'),
+    // 5
+    ap1_anio: val('ap1_anio'), ap1_activo: val('ap1_activo'), ap1_pasivo: val('ap1_pasivo'), ap1_pn: val('ap1_pn'),
+    ap2_anio: val('ap2_anio'), ap2_activo: val('ap2_activo'), ap2_pasivo: val('ap2_pasivo'), ap2_pn: val('ap2_pn'),
+    ap3_anio: val('ap3_anio'), ap3_activo: val('ap3_activo'), ap3_pasivo: val('ap3_pasivo'), ap3_pn: val('ap3_pn'),
+    capital_social: val('capital_social'),
+    // 6
+    financ_cap_trabajo: collectChecks(
+      ['ct_giro','ct_proveedores','ct_cpd','ct_cta_corriente','ct_factoring'],
+      ['Giro operativo','Proveedores','CPD','Cta. Corriente','Factoring']
+    ) + (chk('ct_otros') ? (', ' + (val('ct_otros_txt') || 'Otros')) : ''),
+    ct_cpd_monto: val('ct_cpd_monto'),
+    // 7
+    plazo_cobros: radioVal('plazo_cobros'), plazo_pagos: radioVal('plazo_pagos'),
+    // 8
+    financ_inversiones: collectChecks(
+      ['inv_giro','inv_ahorros','inv_aportes','inv_bancario','inv_proveedores','inv_leasing','inv_on'],
+      ['Giro operativo','Ahorros/reservas','Aportes socios','Préstamos bancarios','Proveedores','Leasing','ON/Pagaré/FF']
+    ) + (chk('inv_otros') ? (', ' + (val('inv_otros_txt') || 'Otros')) : ''),
+    // 9
+    banco_exp1: val('banco_exp1'), banco_exp2: val('banco_exp2'), banco_exp3: val('banco_exp3'),
+    garantia_bancaria: collectChecks(
+      ['gar_hipot','gar_prend','gar_fianza'],
+      ['Real-Hipotecaria','Real-Prendaria','Fianza/Aval']
+    ) + (chk('gar_otra') ? (', ' + (val('gar_otra_txt') || 'Otra')) : ''),
+    // 10
+    sgr_opero: radioVal('sgr_opero'), sgr_cual: val('sgr_cual'), sgr_experiencia: radioVal('sgr_exp'),
+    sgr_contragarantia: collectChecks(['sgr_cg_hipot','sgr_cg_prend','sgr_cg_fianza'],['Real-Hipotecaria','Real-Prendaria','Fianza/Aval']) + (chk('sgr_cg_otra') ? ', '+(val('sgr_cg_otra_txt')||'Otra') : ''),
+    sgr_producto: collectChecks(['sgr_prod_fin','sgr_prod_cpd','sgr_prod_on'],['Garantía Financiera','CPD','ON/Pagaré']) + (chk('sgr_prod_otro') ? ', '+(val('sgr_prod_otro_txt')||'Otro') : ''),
+    // 11
+    razones_no_endeud: collectChecks(
+      ['ne_buro','ne_tasas','ne_plazos','ne_gracia','ne_garantias','ne_politica'],
+      ['Burocracia','Tasas','Plazos','Sin gracia','Sin garantías','No endeudamiento']
+    ) + (chk('ne_otros') ? ', '+(val('ne_otros_txt')||'Otros') : ''),
+    // 12
+    condiciones_credito: collectChecks(
+      ['lc_plazo','lc_tasas','lc_gracia','lc_costos'],
+      ['Mayor plazo','Menores tasas','Períodos de gracia','Menores costos']
+    ) + (chk('lc_otros') ? ', '+(val('lc_otros_txt')||'Otros') : ''),
+    // 13
+    tipo_proyecto: collectChecks(
+      ['pi_bienes','pi_ampliacion','pi_innovacion','pi_capital'],
+      ['Bienes de capital','Ampliación/construcción','Innovación','Capital de trabajo']
+    ) + (chk('pi_otros') ? ', '+(val('pi_otros_txt')||'Otros') : ''),
+    pi_monto: val('pi_monto'), pi_monto_solicitar: val('pi_monto_solicitar'),
+    pi_destino: val('pi_destino'), proyecto_mayor: radioVal('proy_mayor'), pm_monto: val('pm_monto'),
+    // 14
+    razones_proyecto: collectChecks(
+      ['rp_demanda','rp_crecimiento','rp_renovacion','rp_capacidad','rp_mercados','rp_costos','rp_comp_precio','rp_comp_prod','rp_normas','rp_espacio'],
+      ['Demanda','Crecimiento','Renovación','Capacidad','Nuevos mercados','Costos','Competencia precio','Competencia productos','Normas','Espacio']
+    ) + (chk('rp_otros') ? ', '+(val('rp_otros_txt')||'Otros') : ''),
+    // 15
+    plazo_proyecto: radioVal('plazo_proy'),
+    // 16
+    posee_garantias: radioVal('posee_gar'), gar_valor: val('gar_valor'),
+    tipo_inmueble: collectChecks(['inm_planta','inm_local','inm_casa','inm_terreno'],['Planta industrial','Local Comercial','Casa/Departamento','Terreno']) + (chk('inm_otro') ? ', '+(val('inm_otro_txt')||'Otros') : ''),
+    inscripcion_rin: val('inscripcion_rin'),
+    // 17
+    posee_deuda: radioVal('posee_deuda'),
+    deuda_bancaria: collectDebt(),
+    total_deudas: val('total_deudas'), deudas_previs: val('deudas_previs'), deudas_fiscales: val('deudas_fiscales'),
+    // 18
+    pgr: radioVal('pgr'), pgr_cual: val('pgr_cual'), ctb: radioVal('ctb'), ctb_cual: val('ctb_cual'),
+    // 19
+    documentacion: collectChecks(['doc1','doc2','doc3','doc4'],['EEFF/DDJJ','Ventas mensuales','Datos socios','Cert PyME+F931']),
+    doc_obs: val('doc_obs'),
+    // 20
+    resp_nombre: val('resp_nombre'), resp_cargo: val('resp_cargo'),
+    resp_email: val('resp_email'), resp_tel: val('resp_tel'),
+    obs_generales: val('obs_generales'),
+  };
+
+  const records = JSON.parse(localStorage.getItem('fb_preanalisis') || '[]');
+  records.unshift(r);
+  localStorage.setItem('fb_preanalisis', JSON.stringify(records));
+
+  // ── Enviar a Google Sheets (formulario oculto, sin CORS) ─
+  const btn = $('btn-save');
+  const status = $('form-status');
+
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'PEGAR_URL_DE_APPS_SCRIPT_AQUI') {
+    showToast('✅ Registro guardado localmente: ' + razon);
+    status.textContent = 'Guardado el ' + r.fecha_registro + ' (solo local)';
+    status.style.color = 'var(--gold)';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Enviando a Google Sheets…';
+  status.textContent = '';
+
+  try {
+    // Crear formulario oculto que envía al iframe (evita restricciones CORS/redirect)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = 'sheets-target';
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = JSON.stringify(r);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
+    // Esperar 2s y asumir éxito (no-cors no devuelve respuesta legible)
+    setTimeout(() => {
+      showToast('✅ Registro enviado a Google Sheets: ' + razon);
+      status.textContent = 'Enviado a Google Sheets el ' + r.fecha_registro;
+      status.style.color = 'var(--success)';
+      btn.disabled = false;
+      btn.textContent = '💾 Guardar Registro';
+    }, 2000);
+
+  } catch(err) {
+    showToast('⚠️ Guardado local. Error: ' + err.message);
+    status.textContent = 'Error de envío — guardado solo localmente';
+    status.style.color = 'var(--error)';
+    btn.disabled = false;
+    btn.textContent = '💾 Guardar Registro';
+  }
+}
+
+// ── Clear ─────────────────────────────────────────────────
+function clearForm() {
+  if (!confirm('¿Limpiar todos los campos del formulario?')) return;
+  document.querySelectorAll('input[type="text"],input[type="email"],input[type="tel"],input[type="number"],input[type="date"],textarea').forEach(el => el.value = '');
+  document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+  document.querySelectorAll('input[type="radio"]').forEach(el => { el.checked = el.value === 'No'; });
+  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  document.querySelectorAll('.conditional').forEach(el => el.classList.remove('visible'));
+  document.querySelectorAll('[id$="_wrap"],[id$="_detail"]').forEach(el => { if(el.style) el.style.display='none'; });
+  $('debt-rows').innerHTML = debtRowHTML();
+  $('form-status').textContent = '';
+  showToast('🗑 Formulario limpiado.');
+}
+
+// ── Render records ────────────────────────────────────────
+function renderRecords() {
+  const records = JSON.parse(localStorage.getItem('fb_preanalisis') || '[]');
+  $('rec-count').textContent = records.length;
+  const cont = $('records-list');
+  if (!records.length) {
+    cont.innerHTML = `<div class="empty-state"><div class="empty-icon">📂</div><h3>No hay registros aún</h3><p>Completá el formulario y guardá el primer registro.</p></div>`;
+    return;
+  }
+  cont.innerHTML = records.map((r, i) => {
+    const fmt = n => n ? '$' + Number(n).toLocaleString('es-AR') : '—';
+    const details = [
+      ['CUIT', r.cuit], ['Tipo', r.tipo_empresa], ['Localidad', r.localidad], ['Provincia', r.provincia],
+      ['Empleados', r.empleados], ['Monto Proyecto', fmt(r.pi_monto)], ['Monto a Solicitar', fmt(r.pi_monto_solicitar)],
+      ['Destino', r.pi_destino], ['Plazo Proyecto', r.plazo_proyecto],
+      ['Posee Garantías', r.posee_garantias], ['Deuda Bancaria', r.posee_deuda],
+      ['SGR', r.sgr_opero], ['Responsable', r.resp_nombre], ['Fecha', r.fecha_registro],
+    ].filter(([,v])=>v).map(([k,v])=>`<div class="record-detail"><div class="record-detail-key">${k}</div><div class="record-detail-val">${v}</div></div>`).join('');
+
+    const extras = [
+      r.descripcion_actividad ? ['Descripción Actividad', r.descripcion_actividad] : null,
+      r.financ_cap_trabajo ? ['Financ. Capital Trabajo', r.financ_cap_trabajo] : null,
+      r.financ_inversiones ? ['Financ. Inversiones', r.financ_inversiones] : null,
+      r.tipo_proyecto ? ['Tipo Proyecto', r.tipo_proyecto] : null,
+      r.razones_proyecto ? ['Razones Proyecto', r.razones_proyecto] : null,
+      r.razones_no_endeud ? ['Razones No Endeud.', r.razones_no_endeud] : null,
+      r.condiciones_credito ? ['Condiciones Crédito', r.condiciones_credito] : null,
+      r.obs_generales ? ['Observaciones', r.obs_generales] : null,
+    ].filter(Boolean).map(([k,v])=>`<div class="record-detail" style="grid-column:1/-1"><div class="record-detail-key">${k}</div><div class="record-detail-val">${v}</div></div>`).join('');
+
+    const debtTable = r.deuda_bancaria && r.deuda_bancaria.length ? `
+      <div style="margin-top:12px;overflow-x:auto;">
+        <div class="sub-section-header" style="background:var(--cream-dark);padding:8px 12px;font-size:11px;font-weight:600;color:var(--navy-mid);text-transform:uppercase;letter-spacing:0.06em;">Deuda Bancaria</div>
+        <table class="debt-table" style="margin:0;"><thead><tr>
+          <th>Banco</th><th>Monto</th><th>Inicio</th><th>Cancelación</th><th>Amort.</th><th>C. Pactadas</th><th>C. Pendientes</th><th>Valor Cuota</th><th>Tipo</th><th>Garantía</th>
+        </tr></thead><tbody>${r.deuda_bancaria.map(d=>`<tr>
+          <td>${d.d_banco||'—'}</td><td>${d.d_monto?'$'+Number(d.d_monto).toLocaleString('es-AR'):'—'}</td>
+          <td>${d.d_inicio||'—'}</td><td>${d.d_cancel||'—'}</td><td>${d.d_amort||'—'}</td>
+          <td>${d.d_cpact||'—'}</td><td>${d.d_cpend||'—'}</td>
+          <td>${d.d_vcuota?'$'+Number(d.d_vcuota).toLocaleString('es-AR'):'—'}</td>
+          <td>${d.d_tipo||'—'}</td><td>${d.d_gar||'—'}</td>
+        </tr>`).join('')}</tbody></table>
+      </div>` : '';
+
+    return `<div class="record-card">
+      <div class="record-card-header" onclick="toggleCard(${i})">
+        <div>
+          <div class="record-card-title">📄 ${r.razon_social}</div>
+          <div class="record-card-meta">${r.fecha_registro}${r.localidad?' · '+r.localidad:''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteRecord(${r.id})">Eliminar</button>
+          <span id="chev-${i}" style="color:var(--text-light);font-size:18px;">▼</span>
+        </div>
+      </div>
+      <div class="record-card-body" id="card-${i}">
+        <div class="record-detail-grid">${details}${extras}</div>
+        ${debtTable}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(i) {
+  $('card-'+i).classList.toggle('open');
+  $('chev-'+i).textContent = $('card-'+i).classList.contains('open') ? '▲' : '▼';
+}
+
+function deleteRecord(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  let recs = JSON.parse(localStorage.getItem('fb_preanalisis')||'[]');
+  recs = recs.filter(r => r.id !== id);
+  localStorage.setItem('fb_preanalisis', JSON.stringify(recs));
+  renderRecords(); showToast('🗑 Registro eliminado.');
+}
+
+function clearAll() {
+  if (!confirm('¿Eliminar TODOS los registros? Acción irreversible.')) return;
+  localStorage.removeItem('fb_preanalisis');
+  renderRecords(); showToast('🗑 Todos los registros eliminados.');
+}
+
+// ── Export ────────────────────────────────────────────────
+function exportJSON() {
+  const recs = JSON.parse(localStorage.getItem('fb_preanalisis')||'[]');
+  if (!recs.length) { showToast('⚠ No hay registros para exportar.'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(recs, null, 2)], {type:'application/json'}));
+  a.download = 'preanalisis_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function exportCSV() {
+  const recs = JSON.parse(localStorage.getItem('fb_preanalisis')||'[]');
+  if (!recs.length) { showToast('⚠ No hay registros para exportar.'); return; }
+  const flat = recs.map(r => { const c={...r}; if(Array.isArray(c.deuda_bancaria)) c.deuda_bancaria = c.deuda_bancaria.map(d=>`${d.d_banco||''}|$${d.d_monto||0}`).join('; '); return c; });
+  const keys = Object.keys(flat[0]);
+  const csv = [keys.join(';'), ...flat.map(r => keys.map(k => '"' + String(r[k]??'').replace(/"/g,'""').replace(/\n/g,' ') + '"').join(';'))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'preanalisis_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
